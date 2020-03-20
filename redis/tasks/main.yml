@@ -1,0 +1,36 @@
+- name: add redis user
+  user:
+    name: redis
+    create_home: no
+    shell: /sbin/nologin
+    state: present 
+
+- name: create redis dir 
+  file: 
+    path: "{{ redis_home }}/{{ item }}"
+    state: directory
+    owner: redis
+    group: redis 
+    mode: 0755
+  with_items:
+    - run
+    - log
+  tags: create_redis_dir 
+
+- name: install redis 
+  yum: 
+    name: redis 
+    state: present
+
+- name: provide config
+  template: 
+    src: redis.conf.j2 
+    dest: /etc/redis.conf 
+    backup: true
+  notify: restart redis
+ 
+- name: start redis 
+  service: 
+    name: redis
+    state: started 
+    enabled: true 
